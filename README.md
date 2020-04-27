@@ -4,7 +4,11 @@
 
 ![Build R2S JetWRT](https://github.com/KaneGreen/NewJetWRT/workflows/Build%20R2S%20JetWRT/badge.svg?branch=JetWRT&event=push)
 
-本项目采用的源码: https://github.com/fanck0605/friendlywrt-lean
+本项目采用的源码: 
+
+https://github.com/fanck0605/friendlywrt-lean
+
+https://github.com/fanck0605/kernel-rockchip
 
 ### NanoPi R2S说明
 1. 采用[fanck0605](https://github.com/fanck0605/nanopi-r2s)的方式编译R2S固件。
