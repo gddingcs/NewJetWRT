@@ -155,18 +155,21 @@ jobs:
       - name: Time Information
         run: |
           cd rk3328/friendlywrt
-          SourceVersion=$(git show -s --date=short --format="%cd_%h")
+          SourceVersion=$(git show -s --date=short --format="%cd_%H")
           echo "::set-env name=SourceVersion::$SourceVersion"
-          echo "::set-env name=DATETIME::$(date "+%Y%m%d%H%M")"
+          echo "::set-env name=DATETIME::$(date "+%Y%m%d-%H%M")"
 
       - name: Assemble Artifact
         run: |
           mv rk3328/out/*img* ./artifact/
           cd ./artifact/
           gzip --best --keep *.img
-          sha256sum * > hashes-${{ env.DATETIME }}.sha256
+          echo -e "Lean's source:\t${{ env.SourceVersion }}" > information.txt
+          echo -e "Build script:\t${{ github.base_ref }} ${{ github.sha }}" >> information.txt
+          echo -e "Build time:\t${{ env.DATETIME }}" >> information.txt
+          sha256sum * > hashes_${{ env.DATETIME }}.sha256
+          cat hashes_*.sha256
           rm -f *.img
-          cat hashes-*.sha256
           echo "::set-env name=FIRMWARE::$PWD"
           echo "::set-output name=status::success"
 
@@ -174,5 +177,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
         with:
-          name: R2S_JetWrt_${{ env.SourceVersion }}
+          name: R2S-JetWrt_${{ env.DATETIME }}
           path: ${{ env.FIRMWARE }}
