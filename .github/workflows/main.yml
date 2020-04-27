@@ -1,57 +1,65 @@
-name: lean's openwrt
+name: Build R2S JetWRT
 
 on:
   push:
     branches:
-      - lean
+      - JetWRT
     paths:
-      - '.github/workflows/main.yml'
-      - 'patches/**'
-      - 'config_rk3328'
-      - 'nanopi-r2_linux_defconfig'
       - 'CHANGELOG.md'
-  schedule:
-    - cron: '00 18 * * *'
+
+env:
+  UPLOAD_FIRMWARE: true
+  TZ: Asia/Hong_Kong
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
+      - name: Show system
+        run: |
+          uname -a
+          [ -f /etc/issue ] && cat /etc/issue
+          [ -f /etc/issue.net ] && cat /etc/issue.net
+          [ -f /proc/version ] && cat /proc/version
 
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: lean
+          ref: 'JetWRT'
 
-      - name: Initialization Environment
+      - name: Initialize Environment
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
+          sudo apt-get -y purge dotnet* ghc* google* llvm* mysql* php* zulu* firefox hhvm
+          sudo apt-get -y autoremove --purge
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk
           sudo docker image prune -a -f
           sudo apt-get update
-          sudo apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3.5 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf
+          sudo apt-get -y install antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 \
+          device-tree-compiler ecj fastjar file flex g++ g++-multilib gawk gcc-multilib gettext git git-core gperf \
+          java-propose-classpath lib32gcc1 libc6-dev-i386 libelf-dev libglib2.0-dev libncurses5-dev libncursesw5-dev \
+          libssl-dev libtool libz-dev msmtp p7zip p7zip-full patch python python3 python3.5 python3-distutils \
+          qemu-utils subversion texinfo uglifyjs unzip upx wget xmlto zlib1g-dev
           wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
-          git config --global user.name "Chuck"
-          git config --global user.email "fanck0605@qq.com"
+          git config --global user.name "GitHubActions" && git config --global user.email "noreply@github.com"
 
-      - name: Install Repo
+      - name: Install Friendlyarm repo
         run: |
           rm -rf repo
           git clone https://github.com/friendlyarm/repo
-          sudo cp repo/repo /usr/bin/
+          sudo cp -f repo/repo /usr/bin/
           rm -rf repo
 
-      - name: Initialization Source
+      - name: Initialize Source
         run: |
           rm -rf rk3328 && mkdir rk3328 && cd rk3328
           repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master-v19.07.1 -m rk3328.xml --repo-url=https://github.com/friendlyarm/repo --no-clone-bundle
           repo sync -c --no-clone-bundle -j8
 
-      - name: Install lean's openwrt
+      - name: Install Lean's OpenWrt
         run: |
           cd rk3328
           rm -rf friendlywrt
@@ -66,16 +74,7 @@ jobs:
           rm -rf luci-theme-argon
           git clone --single-branch -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git
 
-      - name: Install filebrowser
-        run: |
-          rm -rf openwrt
-          git clone --single-branch -b openwrt-18.06 https://github.com/project-openwrt/openwrt.git --depth=1
-          mkdir -p rk3328/friendlywrt/package/ctcgfw
-          cp -a openwrt/package/ctcgfw/filebrowser rk3328/friendlywrt/package/ctcgfw/
-          cp -a openwrt/package/ctcgfw/luci-app-filebrowser rk3328/friendlywrt/package/ctcgfw/
-          rm -rf openwrt
-
-      - name: Install Openwrt patches
+      - name: Install Openwrt Patches
         run: |
           rm -rf openwrt
           git clone --single-branch https://github.com/openwrt/openwrt.git --depth=1
@@ -88,7 +87,7 @@ jobs:
           cd ../
           rm -rf openwrt
 
-      - name: Enable Kernel futures
+      - name: Enable Kernel Futures
         run: |
           cd rk3328/kernel/
           wget -O net/netfilter/xt_FULLCONENAT.c https://raw.githubusercontent.com/Chion82/netfilter-full-cone-nat/master/xt_FULLCONENAT.c
@@ -98,11 +97,27 @@ jobs:
       - name: Customize Configuration Files
         run: |
           cp config_rk3328 rk3328/configs/config_rk3328
+          cat more_packages >> rk3328/configs/config_rk3328
 
-      - name: Swap wan and lan
+      - name: Swap WAN and LAN
         run: |
           cd rk3328/friendlywrt
           git apply ../../patches/003-openwrt-swap-wan-and-lan.patch
+
+      - name: Modify
+        run: |
+          cd rk3328/friendlywrt
+          TODAY=$(date "+%Y.%m.%d")
+          sed -i "s/OpenWrt/JetWRT Build $TODAY @ OpenWrt/g" package/lean/default-settings/files/zzz-default-settings
+          echo -e "\nWelcome to JetWRT (Build $TODAY)\n" >> package/base-files/files/etc/banner
+          unset TODAY
+          mv ../../r2s/screenrc package/base-files/files/root/.screenrc
+          sed -i '/exit/i\find /etc/rc.d/ -name *docker* -delete' package/lean/default-settings/files/zzz-default-settings
+          sed -i '/uci commit luci/a\uci commit dropbear' package/lean/default-settings/files/zzz-default-settings
+          sed -i '/uci commit luci/a\uci set dropbear.@dropbear[0].Interface='lan'' package/lean/default-settings/files/zzz-default-settings
+          sed -i '/uci commit luci/a\uci commit firewall' package/lean/default-settings/files/zzz-default-settings
+          sed -i '/uci commit luci/a\uci set firewall.@zone[1].forward=REJECT' package/lean/default-settings/files/zzz-default-settings
+          sed -i '/uci commit luci/a\uci set firewall.@zone[1].input=REJECT' package/lean/default-settings/files/zzz-default-settings
 
       - name: Build FriendlyWrt
         run: |
@@ -122,15 +137,10 @@ jobs:
           sudo umount /mnt/friendlywrt-tmp
           sudo losetup -d $lodev
 
-      - name: Assemble Artifact
+      - name: Save Configurations
         run: |
           rm -rf ./artifact/
           mkdir -p ./artifact/
-          gzip rk3328/out/*.img
-          cp rk3328/out/*.img* ./artifact/
-
-      - name: Save Configurations
-        run: |
           cd rk3328/friendlywrt
           ./scripts/diffconfig.sh > ../../artifact/config-lite
           cp .config ../../artifact/config-full
@@ -142,8 +152,27 @@ jobs:
           cp .config ../../artifact/kconfig-full
           cp defconfig ../../artifact/kconfig-lite
 
+      - name: Time Information
+        run: |
+          cd rk3328/friendlywrt
+          SourceVersion=$(git show -s --date=short --format="%cd_%h")
+          echo "::set-env name=SourceVersion::$SourceVersion"
+          echo "::set-env name=DATETIME::$(date "+%Y%m%d%H%M")"
+
+      - name: Assemble Artifact
+        run: |
+          mv rk3328/out/*img* ./artifact/
+          cd ./artifact/
+          gzip --best --keep *.img
+          sha256sum * > hashes-${{ env.DATETIME }}.sha256
+          rm -f *.img
+          cat hashes-*.sha256
+          echo "::set-env name=FIRMWARE::$PWD"
+          echo "::set-output name=status::success"
+
       - name: Upload Artifact
         uses: actions/upload-artifact@master
+        if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
         with:
-          name: FriendlyWrt
-          path: ./artifact/
+          name: R2S_JetWrt_${{ env.SourceVersion }}
+          path: ${{ env.FIRMWARE }}
