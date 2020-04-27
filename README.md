@@ -55,7 +55,7 @@
 * [maxming2333/NanoPi-R2S](https://github.com/maxming2333/NanoPi-R2S)
 
 ### License
-[MIT](./LICENSE)
+[GPL-3.0](./LICENSE)
 
 [Lean's OpenWrt]: https://github.com/coolsnowwolf/lede
 [FriendlyWrt]: https://github.com/friendlyarm/friendlywrt
