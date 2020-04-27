@@ -737,10 +737,10 @@ index ae04212f..b1e104db 100644
 +net.bridge.bridge-nf-call-iptables=1
 diff --git a/package/base-files/files/root/setup.sh b/package/base-files/files/root/setup.sh
 new file mode 100755
-index 00000000..76629dea
+index 00000000..d52a8d9c
 --- /dev/null
 +++ b/package/base-files/files/root/setup.sh
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,143 @@
 +#!/bin/sh
 +# THIS SCIPRT ONLY RUN ONCE. Base on /etc/firstboot_${board}
 +
@@ -881,14 +881,6 @@ index 00000000..76629dea
 +    # set theme
 +    uci set luci.main.mediaurlbase='/luci-static/argon'
 +    uci commit luci
-+fi
-+
-+uci get upnpd > /dev/null
-+if [ $? -eq 0 ]; then
-+    uci set upnpd.config.enabled=1
-+    uci set upnpd.config.download=20480
-+    uci set upnpd.config.upload=2048
-+    uci commit upnpd
 +fi
 +
 +logger "done"
