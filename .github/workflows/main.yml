@@ -15,6 +15,8 @@ on:
       - 'CHANGELOG.md'
 
 env:
+  SWAP_WANLAN: true
+  OC_1500MHZ: true
   UPLOAD_FIRMWARE: true
   TZ: Asia/Hong_Kong
 
@@ -27,9 +29,9 @@ jobs:
       - name: Show system
         run: |
           uname -a
-          [ -f /etc/issue ] && cat /etc/issue
-          [ -f /etc/issue.net ] && cat /etc/issue.net
           [ -f /proc/version ] && cat /proc/version
+          [ -f /etc/issue.net ] && cat /etc/issue.net
+          [ -f /etc/issue ] && cat /etc/issue
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -107,9 +109,17 @@ jobs:
           cat more_packages >> rk3328/configs/config_rk3328
 
       - name: Swap WAN and LAN
+        if: env.SWAP_WANLAN == 'true'
         run: |
           cd rk3328/friendlywrt
           git apply ../../patches/003-openwrt-swap-wan-and-lan.patch
+
+      - name: Enable 1.5GHz
+        if: env.OC_1500MHZ == 'true'
+        run: |
+          cd rk3328/kernel
+          wget https://github.com/armbian/build/raw/master/patch/kernel/rockchip64-dev/RK3328-enable-1512mhz-opp.patch
+          git apply RK3328-enable-1512mhz-opp.patch
 
       - name: Modify
         run: |
@@ -145,10 +155,16 @@ jobs:
           sudo umount /mnt/friendlywrt-tmp
           sudo losetup -d $lodev
 
-      - name: Save Configurations
+      - name: Assemble Artifact
         run: |
           rm -rf ./artifact/
           mkdir -p ./artifact/
+          mv rk3328/out/*img* ./artifact/
+          cd ./artifact/
+          gzip --best --keep *.img
+
+      - name: Save Configurations
+        run: |
           cd rk3328/friendlywrt
           ./scripts/diffconfig.sh > ../../artifact/config-lite
           cp .config ../../artifact/config-full
@@ -160,29 +176,26 @@ jobs:
           cp .config ../../artifact/kconfig-full
           cp defconfig ../../artifact/kconfig-lite
 
-      - name: Time Information
+      - name: Build Time Information
         run: |
           cd rk3328/friendlywrt
           SourceVersion=$(git show -s --date=short --format="%cd_%H")
           echo "::set-env name=SourceVersion::$SourceVersion"
           echo "::set-env name=DATETIME::$(date "+%Y%m%d-%H%M")"
 
-      - name: Assemble Artifact
+      - name: Organize Files and Generate Hash Checksum
         run: |
-          mv rk3328/out/*img* ./artifact/
           cd ./artifact/
-          gzip --best --keep *.img
-          echo -e "Lean's source:\t${{ env.SourceVersion }}" > information.txt
-          echo -e "Build script:\t${{ github.base_ref }} ${{ github.sha }}" >> information.txt
-          echo -e "Build time:\t${{ env.DATETIME }}" >> information.txt
-          sha256sum * > hashes_${{ env.DATETIME }}.sha256
-          cat hashes_*.sha256
+          echo -e "FriendlyWrt source:\t${{ env.SourceVersion }}" > about.txt
+          echo -e "Build script:\t${{ github.sha }}" >> about.txt
+          echo -e "Build time:\t${{ env.DATETIME }}" >> about.txt
+          sha256sum * | tee hashes_${{ env.DATETIME }}.sha256
           rm -f *.img
           echo "::set-env name=FIRMWARE::$PWD"
           echo "::set-output name=status::success"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v2
         if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
         with:
           name: R2S-JetWrt_${{ env.DATETIME }}

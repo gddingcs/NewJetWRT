@@ -1,17 +1,24 @@
 # 此编译版变更日志
-### 2020/04/29 beta 5
+## 2020/04/30 beta 6 (upstream 2.2.0)
+* 更新[上游](https://github.com/fanck0605/nanopi-r2s/tree/3c46396ba7ebccf46e73803fed23f6a47565784b)。
+* 移除frp、autocore、网易云音乐解锁、繁体中文语言包。
+* 添加Turbo ACC网络加速控制页面。
+* 显示CPU主频和温度。
+* 内核更新到 `5.4.36`。
+
+## 2020/04/29 beta 5
 * 更新[上游](https://github.com/fanck0605/nanopi-r2s/tree/94325fbc5505e8966f373280d3cea2244f968ce4)。
 
-### 2020/04/28 beta 4
+## 2020/04/28 beta 4
 * 移除vim-full，保留vim-fuller。
 
-### 2020/04/27 beta 3
+## 2020/04/27 beta 3
 构建失败。
 
-### 2020/04/27 beta 2
+## 2020/04/27 beta 2
 * 更新[上游](https://github.com/fanck0605/nanopi-r2s/tree/762dec2e8fec14832fe2a91bdab95f31ffb418ad)。
 
-### 2020/04/27 beta 1
+## 2020/04/27 beta 1
 已取消。
 
 ------

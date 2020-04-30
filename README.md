@@ -11,7 +11,7 @@
 ### NanoPi R2S说明
 1. 采用[fanck0605](https://github.com/fanck0605/nanopi-r2s)的方式编译R2S固件。
 2. 默认管理地址：`192.168.2.1`；用户名：`root`；密码：`password`。
-3. 支持Aria2、diskman、Docker、frpc/frps、samba、ssr-plus、ttyd、WireGuard、ZeroTier等。
+3. 支持Aria2、diskman、Docker、samba、ssr-plus、ttyd、WireGuard、ZeroTier等。
 4. 去掉全部广告拦截、网易云音乐解锁、transmission、多拨。
 5. 添加了SFTP支持，可以使用SFTP协议传输文件。
 6. 包含3个主题：argon、bootstrap、material。
