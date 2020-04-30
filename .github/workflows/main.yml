@@ -26,17 +26,17 @@ jobs:
     if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: 'JetWRT'
+
       - name: Show system
         run: |
           uname -a
           [ -f /proc/version ] && cat /proc/version
           [ -f /etc/issue.net ] && cat /etc/issue.net
           [ -f /etc/issue ] && cat /etc/issue
-
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: 'JetWRT'
 
       # refer to klever1988/nanopi-openwrt and soffchen/NanoPi-R2S
       - name: Initialize Environment
@@ -59,7 +59,7 @@ jobs:
       - name: Install Friendlyarm repo
         run: |
           rm -rf repo
-          git clone https://github.com/friendlyarm/repo
+          git clone --no-tags https://github.com/friendlyarm/repo
           sudo cp -f repo/repo /usr/bin/
           rm -rf repo
 
@@ -76,17 +76,21 @@ jobs:
           sed -i 's/#src-git/src-git/g' ./feeds.conf.default
 
       # default version contains some bug
-      - name: Upgrade Argon Theme
+      - name: Upgrade Argon Theme and other packages
         run: |
           cd rk3328/friendlywrt/package/lean
           rm -rf luci-theme-argon
-          git clone --single-branch -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git
+          git clone --no-tags --single-branch -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git
+          rm -rf luci-app-dockerman
+          rm -rf luci-app-diskman
+          git clone --no-tags https://github.com/lisaac/luci-app-dockerman.git
+          git clone --no-tags https://github.com/lisaac/luci-app-diskman.git
 
       # refer to klever1988/nanopi-openwrt, modified by Chuck <fanck0605@qq.com>
       - name: Install Openwrt Patches
         run: |
           rm -rf openwrt
-          git clone --single-branch https://github.com/openwrt/openwrt.git --depth=1
+          git clone --no-tags --single-branch https://github.com/openwrt/openwrt.git --depth=1
           cd openwrt
           ./scripts/patch-kernel.sh ../rk3328/kernel ./target/linux/generic/backport-5.4
           ./scripts/patch-kernel.sh ../rk3328/kernel ./target/linux/generic/pending-5.4

@@ -1,4 +1,7 @@
 # 此编译版变更日志
+## 2020/04/30 beta 7
+* 修复了dockerman和diskman没有使用新版本的问题。
+
 ## 2020/04/30 beta 6 (upstream 2.2.0)
 * 更新[上游](https://github.com/fanck0605/nanopi-r2s/tree/3c46396ba7ebccf46e73803fed23f6a47565784b)。
 * 移除frp、autocore、网易云音乐解锁、繁体中文语言包。
