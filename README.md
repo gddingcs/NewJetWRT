@@ -2,13 +2,6 @@
 
 使用GitHub Actions编译的OpenWRT for NanoPi R2S
 
-## This repository has been Archived
-**Features and changes has been merged into https://github.com/KaneGreen/JetWRT**  
-**This repository is no longer maintained. Check that repository for new updates.**  
-**代码变更和特性以及合并到新的[储存库](https://github.com/KaneGreen/JetWRT)**  
-**本储存库将不再维护，请检查新的储存库以获取后续更新。**
-
-
 ![Build R2S JetWRT](https://github.com/KaneGreen/NewJetWRT/workflows/Build%20R2S%20JetWRT/badge.svg?branch=JetWRT&event=push)
 
 本项目采用的源码: 

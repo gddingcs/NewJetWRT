@@ -1,5 +1,12 @@
 name: Build R2S JetWRT
 
+# Copyright (c) 2020, Chuck <fanck0605@qq.com>
+#
+# 警告:
+# 对着屏幕的哥们, 我们允许你使用此脚本, 但不允许你抹去作者的信息, 请保留这段话.
+# 你可以随意使用本脚本的代码, 但请注明出处.
+#
+
 on:
   push:
     branches:
@@ -29,6 +36,7 @@ jobs:
         with:
           ref: 'JetWRT'
 
+      # refer to klever1988/nanopi-openwrt and soffchen/NanoPi-R2S
       - name: Initialize Environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -56,30 +64,23 @@ jobs:
       - name: Initialize Source
         run: |
           rm -rf rk3328 && mkdir rk3328 && cd rk3328
-          repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master-v19.07.1 -m rk3328.xml --repo-url=https://github.com/friendlyarm/repo --no-clone-bundle
+          repo init -u https://github.com/fanck0605/friendlywrt_manifests -b master-v19.07.1 -m rk3328.xml --repo-url=https://github.com/friendlyarm/repo --no-clone-bundle
           repo sync -c --no-clone-bundle -j8
 
-      - name: Install Lean's OpenWrt
+      # refer to coolsnowwolf/lede
+      - name: Unlock Some OpenWrt feeds
         run: |
-          cd rk3328
-          rm -rf friendlywrt
-          git clone https://github.com/coolsnowwolf/lede friendlywrt
-          cd friendlywrt
-          git apply ../../patches/002-openwrt-apply-friendlywrt.patch
+          cd rk3328/friendlywrt
           sed -i 's/#src-git/src-git/g' ./feeds.conf.default
 
-      - name: Update kernel-rockchip
-        run: |
-          cd rk3328
-          rm -rf kernel
-          git clone --single-branch -b nanopi-r2-v5.4.y https://github.com/fanck0605/kernel-rockchip kernel
-
+      # default version contains some bug
       - name: Upgrade Argon Theme
         run: |
           cd rk3328/friendlywrt/package/lean
           rm -rf luci-theme-argon
           git clone --single-branch -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git
 
+      # refer to klever1988/nanopi-openwrt, modified by Chuck <fanck0605@qq.com>
       - name: Install Openwrt Patches
         run: |
           rm -rf openwrt
@@ -90,9 +91,9 @@ jobs:
           ./scripts/patch-kernel.sh ../rk3328/kernel ./target/linux/generic/hack-5.4
           ./scripts/patch-kernel.sh ../rk3328/kernel ./target/linux/octeontx/patches-5.4
           cp -a ./target/linux/generic/files/* ../rk3328/kernel/
-          cd ../
-          rm -rf openwrt
+          cd ../ && rm -rf openwrt
 
+      # refer to klever1988/nanopi-openwrt, modified by Chuck <fanck0605@qq.com>
       - name: Enable Kernel Futures
         run: |
           cd rk3328/kernel/
@@ -125,6 +126,7 @@ jobs:
           sed -i '/uci commit luci/a\uci set firewall.@zone[1].forward=REJECT' package/lean/default-settings/files/zzz-default-settings
           sed -i '/uci commit luci/a\uci set firewall.@zone[1].input=REJECT' package/lean/default-settings/files/zzz-default-settings
 
+      # 编译时不要去除 set -e, 编译都报错了, 你还让它继续, 最后的固件能没有 bug?
       - name: Build FriendlyWrt
         run: |
           cd rk3328
