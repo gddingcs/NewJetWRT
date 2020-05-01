@@ -29,9 +29,11 @@
 
 ## 用法
 1. Fork 到自己的账号下
-2. 进入 Actions 界面，启用 Github Actions
+2. 进入 Actions 界面，启用 Github Actions (**必须要先启用**)
 3. 在 `more_packages` 文件中，自定义所需要的软件包
     - 比如需要 `luci-app-uhttpd`， 那么只要在文件中添加一行 `CONFIG_PACKAGE_luci-app-uhttpd=y`
+4. 如不需要USB网卡功能，在 `.yml` 文件中将 `cat config_usb-net >> rk3328/configs/config_rk3328 `这一行注释掉即可
+    - 未经测试不保证能用
 
 ## 注意
 1. 产品发布初期，官方代码每天都在变，遇到无法编译时，请过来查看 `.yml` 与 `config` 最新异动。

@@ -86,6 +86,14 @@ jobs:
           git clone --no-tags https://github.com/lisaac/luci-app-dockerman.git
           git clone --no-tags https://github.com/lisaac/luci-app-diskman.git
 
+      - name: Install luci-app-r2sflasher
+        run: |
+          rm -rf r2sflasher
+          mkdir -p rk3328/friendlywrt/package/songchenwen
+          git clone https://github.com/songchenwen/nanopi-r2s.git r2sflasher
+          cp -a r2sflasher/luci-app-r2sflasher rk3328/friendlywrt/package/songchenwen/
+          rm -rf r2sflasher
+
       # refer to klever1988/nanopi-openwrt, modified by Chuck <fanck0605@qq.com>
       - name: Install Openwrt Patches
         run: |
@@ -110,6 +118,7 @@ jobs:
       - name: Customize Configuration Files
         run: |
           cp config_rk3328 rk3328/configs/config_rk3328
+          cat config_usb-net >> rk3328/configs/config_rk3328
           cat more_packages >> rk3328/configs/config_rk3328
 
       - name: Swap WAN and LAN
