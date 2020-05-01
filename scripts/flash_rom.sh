@@ -1,9 +1,12 @@
 #!/bin/sh
+# Original author：Chuck <fanck0605@qq.com>
+# Modify：KaneGreen
+####################### original comment #######################
 # Copyright (c) 2020, Chuck <fanck0605@qq.com>
 # Copyright (c) 2020, klever1988 <56048681+klever1988@users.noreply.github.com>
 #
 #     警告:对着屏幕的哥们,我们允许你使用此脚本，但不允许你抹去作者的信息,请保留这段话。
-#
+################################################################
 
 # the function to flash a rom
 # useage: flash_rom /tmp/rom.img.gz /dev/mmcblk0 gz
@@ -22,7 +25,7 @@ flash_rom() {
     # 使用 dd fsync 模式保证数据写入完整性
     case $rom_type in
     gz)
-        pv $rom_path | gunzip -c | dd of=$sys_dev conv=fsync
+        pv $rom_path | gunzip -dc | dd of=$sys_dev conv=fsync
         ;;
     zst)
         pv $rom_path | zstdcat | dd of=$sys_dev conv=fsync
@@ -144,7 +147,7 @@ if [ $save_conf = true ]; then
     echo -e '\e[92m正在解压镜像文件...\e[0m'
     case $rom_type in
     gz)
-        pv $rom_path | gunzip -c >/root/FriendlyWrt.img
+        pv $rom_path | gunzip -dc >/root/FriendlyWrt.img
         ;;
     zst)
         pv $rom_path | zstdcat >/root/FriendlyWrt.img

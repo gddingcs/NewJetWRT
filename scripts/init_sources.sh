@@ -1,12 +1,14 @@
 #!/bin/sh
 # 注意: 本脚本不会初始化编译所需的环境，请自行安装
-
+# Original author：Chuck <fanck0605@qq.com>
+# No modification by KaneGreen
+####################### original comment #######################
 # Copyright (c) 2020, Chuck <fanck0605@qq.com>
 #
 # 警告:
 # 对着屏幕的哥们, 我们允许你使用此脚本, 但不允许你抹去作者的信息, 请保留这段话.
 # 你可以随意使用本脚本的代码, 但请注明出处.
-#
+################################################################
 set -eu
 
 # init main project
